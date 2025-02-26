@@ -8,8 +8,8 @@ from bpy.props import (
 bl_info = {
     "name": "Batch Export",
     "author": "Adayas",
-    "version": (2, 4, 0),
-    "blender": (1, 0, 0),
+    "version": (1, 0, 0),
+    "blender": (4, 3, 2),
     "category": "Import-Export",
     "location": "Top Bar > Batch Export",
     "description": "Batch export selected objects or their collection to individual files with format selection.",
