@@ -73,7 +73,7 @@
 
 ## 🧑‍💻 **Author**
 **Adayas**  
-GitHub: [Repository](https://github.com/adayaskm/Blender-Batch-Export) *(Replace with actual link if hosted)*  
+GitHub: [Repository](https://github.com/adayaskm/Blender-Batch-Export)
 Version: **1.2.0**  
 License: **MIT**  
 
