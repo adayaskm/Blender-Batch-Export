@@ -8,11 +8,11 @@ from bpy.props import (
 bl_info = {
     "name": "Batch Export",
     "author": "Adayas",
-    "version": (1, 0, 0),
+    "version": (1, 2, 0),
     "blender": (4, 3, 2),
     "category": "Import-Export",
     "location": "Top Bar > Batch Export",
-    "description": "Batch export selected objects or their collection to individual files with format selection.",
+    "description": "Batch export selected objects or their collection with options to fix flipped normals and maintain pivot.",
 }
 
 # ----------------------- Utility Functions ----------------------- #
@@ -65,10 +65,38 @@ class EXPORT_OT_batch_export(Operator):
                 return {'CANCELLED'}
 
         for obj in objects_to_export:
+            if settings.fix_flip_normals and obj.type == 'MESH':
+                self.fix_normals(obj)
             export_func(obj, export_path, settings)
 
         self.report({'INFO'}, f"Exported {len(objects_to_export)} object(s) as {settings.file_format}.")
         return {'FINISHED'}
+
+    def fix_normals(self, obj):
+        bpy.ops.object.select_all(action='DESELECT')
+        obj.select_set(True)
+        bpy.context.view_layer.objects.active = obj
+
+        # Store the current cursor location
+        original_cursor_location = bpy.context.scene.cursor.location.copy()
+
+        # Move the 3D cursor to the selected object
+        bpy.ops.view3d.snap_cursor_to_selected()
+
+        # Apply location, rotation, and scale
+        bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+      
+        # Set origin to 3D cursor (align pivot to object center)
+        bpy.ops.object.origin_set(type='ORIGIN_CURSOR', center='MEDIAN')
+
+        # Enter edit mode to recalculate normals
+        bpy.ops.object.mode_set(mode='EDIT')
+        bpy.ops.mesh.select_all(action='SELECT')
+        bpy.ops.mesh.normals_make_consistent(inside=False)
+        bpy.ops.object.mode_set(mode='OBJECT')
+
+        # Restore the 3D cursor to its original location
+        bpy.context.scene.cursor.location = original_cursor_location
 
     def prepare_object(self, obj, settings):
         original_location = obj.location.copy()
@@ -128,6 +156,7 @@ class VIEW3D_PT_batch_export(Panel):
         layout.prop(settings, "file_suffix")
         layout.prop(settings, "move_to_origin")
         layout.prop(settings, "apply_modifiers")
+        layout.prop(settings, "fix_flip_normals")
         layout.operator("export.batch_export")
 
 class TOPBAR_MT_batch_export_menu(bpy.types.Menu):
@@ -192,6 +221,12 @@ class BatchExportSettings(PropertyGroup):
         name="Apply Modifiers",
         description="Apply modifiers before export.",
         default=True
+    )
+
+    fix_flip_normals: BoolProperty(
+        name="Fix Flip Normals",
+        description="Move cursor to selection, set origin to cursor, apply transforms, and recalculate normals.",
+        default=False
     )
 
 # ----------------------- Registration ----------------------- #
