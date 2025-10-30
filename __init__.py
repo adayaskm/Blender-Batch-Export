@@ -20,10 +20,6 @@ bl_info = {
 
 def ensure_dir(path: str):
     """Ensure the export directory exists."""
-    # Ensure the addon is enabled
-    enabled, loaded = check("io_mesh_stl")
-    if not enabled:
-        enable("io_mesh_stl")
     if not os.path.exists(path):
         os.makedirs(path)
 
@@ -240,6 +236,11 @@ def draw_menu(self, context):
     self.layout.menu(TOPBAR_MT_batch_export_menu.bl_idname, icon='EXPORT')
 
 def register():
+    # Ensure the STL export addon is enabled
+    enabled, loaded = check("io_mesh_stl")
+    if not enabled:
+        enable("io_mesh_stl")
+
     bpy.utils.register_class(BatchExportSettings)
     bpy.utils.register_class(EXPORT_OT_batch_export)
     bpy.utils.register_class(VIEW3D_PT_batch_export)
