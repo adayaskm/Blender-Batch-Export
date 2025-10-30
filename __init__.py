@@ -4,7 +4,6 @@ from bpy.types import AddonPreferences, PropertyGroup, Operator, Panel
 from bpy.props import (
     BoolProperty, StringProperty, EnumProperty, PointerProperty
 )
-from addon_utils import check, enable
 
 bl_info = {
     "name": "Batch Export",
@@ -39,8 +38,7 @@ class EXPORT_OT_batch_export(Operator):
         exporters = {
             'FBX': self.export_fbx,
             'OBJ': self.export_obj,
-            'GLTF': self.export_gltf,
-            'STL': self.export_stl
+            'GLTF': self.export_gltf
         }
 
         export_func = exporters.get(settings.file_format)
@@ -117,9 +115,6 @@ class EXPORT_OT_batch_export(Operator):
     def export_gltf(self, obj, path, settings):
         self.export_generic(obj, path, settings, '.glb', bpy.ops.export_scene.gltf, {"export_selected": True})
 
-    def export_stl(self, obj, path, settings):
-        self.export_generic(obj, path, settings, '.stl', bpy.ops.export_mesh.stl)
-
     def export_generic(self, obj, path, settings, extension, export_op, extra_args=None):
         original_location = self.prepare_object(obj, settings)
         filename = os.path.join(path, f"{settings.file_prefix}{obj.name}{settings.file_suffix}{extension}")
@@ -185,7 +180,6 @@ class BatchExportSettings(PropertyGroup):
             ('FBX', "FBX (.fbx)", "Export as FBX format"),
             ('OBJ', "OBJ (.obj)", "Export as OBJ format"),
             ('GLTF', "glTF (.glb)", "Export as glTF format"),
-            ('STL', "STL (.stl)", "Export as STL format"),
         ],
         default='FBX'
     )
@@ -236,11 +230,6 @@ def draw_menu(self, context):
     self.layout.menu(TOPBAR_MT_batch_export_menu.bl_idname, icon='EXPORT')
 
 def register():
-    # Ensure the STL export addon is enabled
-    enabled, loaded = check("io_mesh_stl")
-    if not enabled:
-        enable("io_mesh_stl")
-
     bpy.utils.register_class(BatchExportSettings)
     bpy.utils.register_class(EXPORT_OT_batch_export)
     bpy.utils.register_class(VIEW3D_PT_batch_export)
