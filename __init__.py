@@ -4,6 +4,7 @@ from bpy.types import AddonPreferences, PropertyGroup, Operator, Panel
 from bpy.props import (
     BoolProperty, StringProperty, EnumProperty, PointerProperty
 )
+from addon_utils import check, enable
 
 bl_info = {
     "name": "Batch Export",
@@ -19,6 +20,10 @@ bl_info = {
 
 def ensure_dir(path: str):
     """Ensure the export directory exists."""
+    # Ensure the addon is enabled
+    enabled, loaded = check("io_mesh_stl")
+    if not enabled:
+        enable("io_mesh_stl")
     if not os.path.exists(path):
         os.makedirs(path)
 
